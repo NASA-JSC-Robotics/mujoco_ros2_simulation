@@ -16,6 +16,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+
 #pragma once
 
 #include <atomic>
@@ -35,6 +36,16 @@ namespace mujoco_ros2_simulation
 
 struct LidarData
 {
+  std::string name;
+  std::string frame_name;
+
+  int num_rangefinders;
+
+  double min_angle;
+  double max_angle;
+  double angle_increment;
+
+  std::string laserscan_topic;
 };
 
 /**
@@ -67,8 +78,10 @@ public:
 
   /**
    * @brief Parses lidar information from the mujoco model.
+   *
+   * Returns true if successful, false otherwise.
    */
-  void register_lidar(const hardware_interface::HardwareInfo& hardware_info);
+  bool register_lidar(const hardware_interface::HardwareInfo& hardware_info);
 
 private:
   /**

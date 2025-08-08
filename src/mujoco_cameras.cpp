@@ -18,6 +18,7 @@
  */
 
 #include "mujoco_ros2_simulation/mujoco_cameras.hpp"
+#include "mujoco_ros2_simulation/utils.hpp"
 
 #include "sensor_msgs/image_encodings.hpp"
 
@@ -25,23 +26,6 @@ using namespace std::chrono_literals;
 
 namespace mujoco_ros2_simulation
 {
-
-/**
- * @brief Returns the sensor's component info for the provided sensor name, if it exists.
- */
-std::optional<hardware_interface::ComponentInfo>
-get_camera_sensor(const hardware_interface::HardwareInfo& hardware_info, const std::string& name)
-{
-  for (size_t sensor_index = 0; sensor_index < hardware_info.sensors.size(); sensor_index++)
-  {
-    const auto& sensor = hardware_info.sensors.at(sensor_index);
-    if (hardware_info.sensors.at(sensor_index).name == name)
-    {
-      return sensor;
-    }
-  }
-  return std::nullopt;
-}
 
 MujocoCameras::MujocoCameras(rclcpp::Node::SharedPtr& node, std::recursive_mutex* sim_mutex, mjData* mujoco_data,
                              mjModel* mujoco_model, double camera_publish_rate)
@@ -72,7 +56,7 @@ void MujocoCameras::register_cameras(const hardware_interface::HardwareInfo& har
     camera.viewport = { 0, 0, cam_resolution[0], cam_resolution[1] };
 
     // If the hardware_info has a camera of the same name then we pull parameters from there.
-    const auto camera_info_maybe = get_camera_sensor(hardware_info, cam_name);
+    const auto camera_info_maybe = get_sensor_from_info(hardware_info, cam_name);
     if (camera_info_maybe.has_value())
     {
       const auto camera_info = camera_info_maybe.value();
