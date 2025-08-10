@@ -184,7 +184,7 @@ void MujocoCameras::update()
   // Rendering is done offscreen
   mjr_setBuffer(mjFB_OFFSCREEN, &mjr_con_);
 
-  // Step 1: Lock the sime and copy data for use in all camera rendering.
+  // Step 1: Lock the sim and copy data for use in all camera rendering.
   {
     std::unique_lock<std::recursive_mutex> lock(*sim_mutex_);
     mjv_copyData(mj_camera_data_, mj_model_, mj_data_);

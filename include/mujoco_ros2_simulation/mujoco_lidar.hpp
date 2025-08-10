@@ -30,6 +30,7 @@
 #include <rclcpp/node.hpp>
 #include <rclcpp/publisher.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/laser_scan.hpp>
 
 namespace mujoco_ros2_simulation
 {
@@ -38,14 +39,21 @@ struct LidarData
 {
   std::string name;
   std::string frame_name;
-
   int num_rangefinders;
-
   double min_angle;
   double max_angle;
   double angle_increment;
+  double range_min;
+  double range_max;
 
+  // Maps the index of the rangefinder to the index of the mujoco rangefinder's data.
+  // E.g. lidar-034 -> sensor_indexes[34] will contain index of that rangefinder in mj_data_->sensordata
+  std::vector<int> sensor_indexes;
+
+  // For message publishing
   std::string laserscan_topic;
+  sensor_msgs::msg::LaserScan laser_scan_msg;
+  rclcpp::Publisher<sensor_msgs::msg::LaserScan>::SharedPtr scan_pub;
 };
 
 /**
@@ -101,7 +109,7 @@ private:
 
   mjData* mj_data_;
   mjModel* mj_model_;
-  mjData* mj_lidar_data_;
+  mjData* mj_lidar_data_;  // TODO: This should just be the vector of sensor data...
 
   // LaserScan publishing rate
   double lidar_publish_rate_;
@@ -111,10 +119,10 @@ private:
   mjvScene mjv_scn_;
   mjrContext mjr_con_;
 
-  // Containers for camera data and ROS constructs
+  // Containers for ladar data and ROS constructs
   std::vector<LidarData> lidar_sensors_;
 
-  // Camera processing thread
+  // Lidar processing thread
   std::thread rendering_thread_;
   std::atomic_bool publish_lidar_;
 };
