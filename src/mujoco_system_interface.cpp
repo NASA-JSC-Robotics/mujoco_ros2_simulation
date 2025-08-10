@@ -338,6 +338,8 @@ hardware_interface::CallbackReturn MujocoSystemInterface::on_init(const hardware
 
   // Pull the camera publish rate out of the info, if present, otherwise default to 5 hz.
   const auto camera_publish_rate = std::stod(get_parameter("camera_publish_rate").value_or("5.0"));
+  // Pull the lidar publish rate out of the info, if present, otherwise default to 5 hz.
+  const auto lidar_publish_rate = std::stod(get_parameter("lidar_publish_rate").value_or("5.0"));
 
   // We essentially reconstruct the 'simulate.cc::main()' function here, and
   // launch a Simulate object with all necessary rendering process/options
@@ -420,8 +422,12 @@ hardware_interface::CallbackReturn MujocoSystemInterface::on_init(const hardware
 
   // Configure Lidar sensors
   RCLCPP_INFO(rclcpp::get_logger("MujocoSystemInterface"), "Initializing lidar...");
-  lidar_sensors_ = std::make_unique<MujocoLidar>(mujoco_node_, sim_mutex_, mj_data_, mj_model_, camera_publish_rate);
-  lidar_sensors_->register_lidar(info);
+  lidar_sensors_ = std::make_unique<MujocoLidar>(mujoco_node_, sim_mutex_, mj_data_, mj_model_, lidar_publish_rate);
+  if (!lidar_sensors_->register_lidar(info))
+  {
+    RCLCPP_INFO(rclcpp::get_logger("MujocoSystemInterface"), "Failed to initializ lidar, exiting...");
+    return hardware_interface::CallbackReturn::FAILURE;
+  }
 
   // When the interface is activated, we start the physics engine.
   physics_thread_ = std::thread([this]() {

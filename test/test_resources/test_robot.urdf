@@ -138,6 +138,9 @@
 
       <!-- Publish camera images at 6 hz -->
       <param name="camera_publish_rate">6.0</param>
+
+      <!-- Publish lidar scans at 10 hz -->
+      <param name="lidar_publish_rate">10.0</param>
     </hardware>
     <joint name="joint1">
       <command_interface name="position"/>
@@ -172,8 +175,10 @@
     <!-- <sensor_name>-<num_rangefinders> -->
     <sensor name="lidar">
       <param name="frame_name">lidar_sensor_frame</param>
-      <param name="angle_increment">0.0174</param>
-      <param name="num_rangefinders">360</param>
+      <param name="angle_increment">0.025</param>
+      <param name="num_rangefinders">12</param>
+      <param name="range_min">0.05</param>
+      <param name="range_max">10</param>
       <param name="laserscan_topic">/scan</param>
     </sensor>
   </ros2_control>
