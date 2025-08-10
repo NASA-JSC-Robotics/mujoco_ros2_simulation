@@ -82,33 +82,33 @@ std::optional<LidarData> get_lidar_data(const hardware_interface::HardwareInfo& 
   }
 
   // Otherwise construct and return a new LidarData object
-  LidarData data;
-  data.name = name;
-  data.frame_name = *frame_name;
-  data.num_rangefinders = std::stoi(*num_rangefinders);
-  data.angle_increment = std::stod(*angle_increment);
-  data.laserscan_topic = laserscan_topic.has_value() ? laserscan_topic.value() : "scan";
-  data.range_min = range_min.has_value() ? std::stod(range_min.value()) : 0.0;
-  data.range_max = range_max.has_value() ? std::stod(range_max.value()) : 1000.0;
+  LidarData lidar_sensor;
+  lidar_sensor.name = name;
+  lidar_sensor.frame_name = *frame_name;
+  lidar_sensor.num_rangefinders = std::stoi(*num_rangefinders);
+  lidar_sensor.angle_increment = std::stod(*angle_increment);
+  lidar_sensor.laserscan_topic = laserscan_topic.has_value() ? laserscan_topic.value() : "/scan";
+  lidar_sensor.range_min = range_min.has_value() ? std::stod(range_min.value()) : 0.0;
+  lidar_sensor.range_max = range_max.has_value() ? std::stod(range_max.value()) : 1000.0;
 
   // Compute based on ROS control config (could we get this from sites or something?)
-  data.min_angle = 0.0;
-  data.max_angle = data.angle_increment * data.num_rangefinders;
-  data.sensor_indexes.resize(data.num_rangefinders);
+  lidar_sensor.min_angle = 0.0;
+  lidar_sensor.max_angle = lidar_sensor.angle_increment * lidar_sensor.num_rangefinders;
+  lidar_sensor.sensor_indexes.resize(lidar_sensor.num_rangefinders);
 
   // Configure the static parameters of the laserscan message
-  data.laser_scan_msg.header.frame_id = data.frame_name;
-  data.laser_scan_msg.time_increment = 0.0;  // Does this matter?
-  data.laser_scan_msg.scan_time = 0.0;       // Does this matter?
-  data.laser_scan_msg.angle_min = data.min_angle;
-  data.laser_scan_msg.angle_max = data.max_angle;
-  data.laser_scan_msg.angle_increment = data.angle_increment;
-  data.laser_scan_msg.range_min = data.range_min;
-  data.laser_scan_msg.range_max = data.range_max;
-  data.laser_scan_msg.ranges.resize(data.num_rangefinders);
-  data.laser_scan_msg.intensities.resize(0);
+  lidar_sensor.laser_scan_msg.header.frame_id = lidar_sensor.frame_name;
+  lidar_sensor.laser_scan_msg.time_increment = 0.0;  // Does this matter?
+  lidar_sensor.laser_scan_msg.scan_time = 0.0;       // Does this matter?
+  lidar_sensor.laser_scan_msg.angle_min = lidar_sensor.min_angle;
+  lidar_sensor.laser_scan_msg.angle_max = lidar_sensor.max_angle;
+  lidar_sensor.laser_scan_msg.angle_increment = lidar_sensor.angle_increment;
+  lidar_sensor.laser_scan_msg.range_min = lidar_sensor.range_min;
+  lidar_sensor.laser_scan_msg.range_max = lidar_sensor.range_max;
+  lidar_sensor.laser_scan_msg.ranges.resize(lidar_sensor.num_rangefinders);
+  lidar_sensor.laser_scan_msg.intensities.resize(0);
 
-  return data;
+  return lidar_sensor;
 }
 
 MujocoLidar::MujocoLidar(rclcpp::Node::SharedPtr& node, std::recursive_mutex* sim_mutex, mjData* mujoco_data,
@@ -171,12 +171,6 @@ bool MujocoLidar::register_lidar(const hardware_interface::HardwareInfo& hardwar
       auto lidar = new_data_maybe.value();
       lidar.scan_pub = node_->create_publisher<sensor_msgs::msg::LaserScan>(lidar.laserscan_topic, 1);
 
-      // Add it to relevant containers
-      lidar_sensors_.push_back(std::move(lidar));
-
-      // For updating the index below
-      lidar_it = lidar_sensors_.end() - 1;
-
       // Note that we have added the sensor
       RCLCPP_INFO_STREAM(node_->get_logger(), "Adding lidar sensor: " << lidar.name << ", idx: " << idx);
       RCLCPP_INFO_STREAM(node_->get_logger(), "    frame_name: " << lidar.frame_name);
@@ -187,6 +181,12 @@ bool MujocoLidar::register_lidar(const hardware_interface::HardwareInfo& hardwar
       RCLCPP_INFO_STREAM(node_->get_logger(), "    max_angle: " << lidar.max_angle);
       RCLCPP_INFO_STREAM(node_->get_logger(), "    range_min: " << lidar.range_min);
       RCLCPP_INFO_STREAM(node_->get_logger(), "    range_max: " << lidar.range_max);
+
+      // Add it to relevant containers
+      lidar_sensors_.push_back(std::move(lidar));
+
+      // For updating the index below
+      lidar_it = lidar_sensors_.end() - 1;
     }
 
     // Add this range to the sensor finders data array. There's technically no guarantee that the data is

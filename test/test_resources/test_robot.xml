@@ -45,6 +45,6 @@
     <position name="joint2" joint="joint2" kp="1000" dampratio="1.0"/>
   </actuator>
   <sensor>
-    <rangefinder site="rf" />
+    <rangefinder name="lidar" site="rf" />
   </sensor>
 </mujoco>
