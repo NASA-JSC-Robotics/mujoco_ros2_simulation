@@ -25,7 +25,7 @@
     </body>
     <site name="world" pos="0 0 0" quat="1.0 0 0 0"/>
     <site name="base" pos="0 0 0" quat="1.0 0 0 0"/>
-    <body name="lidar" pos="1.0 2.2 0.0" euler="1.5708 0 0">
+    <body name="lidar" pos="1.0 2.0 0.0" euler="1.5708 0 0">
       <replicate count="12" sep="-" offset="0 0 0" euler="0 0.025 0">
         <site name="rf" size="0.01" pos="0.0 0.0 0.0" quat="0.0 0.0 0.0 1.0"/>
       </replicate>
