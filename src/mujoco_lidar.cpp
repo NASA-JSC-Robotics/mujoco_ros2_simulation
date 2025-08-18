@@ -258,15 +258,15 @@ void MujocoLidar::update()
     {
       const auto& i = lidar.sensor_indexes[idx];
       auto range = mj_lidar_data_[i];
+      lidar.laser_scan_msg.ranges[idx] = range;
       RCLCPP_DEBUG_STREAM(node_->get_logger(), "  sensor_indexes[" << idx << "] = " << lidar.sensor_indexes[idx]
                                                                    << " - " << mj_lidar_data_[i]);
-
-      if (range < lidar.range_min || range > lidar.range_max)
-      {
-        range = -1.0;
-      }
-      lidar.laser_scan_msg.ranges[idx] = range;
     }
+
+    // Apply range limits to the copied data
+    std::transform(lidar.laser_scan_msg.ranges.begin(), lidar.laser_scan_msg.ranges.end(),
+                   lidar.laser_scan_msg.ranges.begin(),
+                   [&](auto range) { return (range < lidar.range_min || range > lidar.range_max) ? -1.0 : range; });
   }
 
   // Step 3: Publish messages
