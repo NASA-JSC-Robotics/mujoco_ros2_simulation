@@ -109,7 +109,9 @@ private:
 
   mjData* mj_data_;
   mjModel* mj_model_;
-  mjData* mj_lidar_data_;  // TODO: This should just be the vector of sensor data...
+
+  // Vector container to copy sensordata out of mj_data_
+  std::vector<mjtNum> mj_lidar_data_;
 
   // LaserScan publishing rate
   double lidar_publish_rate_;

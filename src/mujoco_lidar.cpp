@@ -225,8 +225,8 @@ void MujocoLidar::close()
 
 void MujocoLidar::update_loop()
 {
-  // Setup container for lidar data. Someday this should just be a copy of the sensordata in the model.
-  mj_lidar_data_ = mj_makeData(mj_model_);
+  // Setup container for lidar data.
+  mj_lidar_data_.resize(mj_model_->nsensordata);
 
   RCLCPP_INFO_STREAM(node_->get_logger(),
                      "Starting the lidar processing loop, publishing at " << lidar_publish_rate_ << " Hz");
@@ -241,10 +241,10 @@ void MujocoLidar::update_loop()
 
 void MujocoLidar::update()
 {
-  // Step 1: Lock the sime and copy data for use lidar rendering.
+  // Step 1: Lock the sim and copy only the sensordata
   {
     std::unique_lock<std::recursive_mutex> lock(*sim_mutex_);
-    mjv_copyData(mj_lidar_data_, mj_model_, mj_data_);
+    std::memcpy(mj_lidar_data_.data(), mj_data_->sensordata, mj_lidar_data_.size() * sizeof(mjtNum));
   }
 
   // Step 2: Copy sensor information for lidar to the relevant containers, filtering as needed
@@ -254,9 +254,9 @@ void MujocoLidar::update()
     for (size_t idx = 0; idx < lidar.sensor_indexes.size(); ++idx)
     {
       const auto& i = lidar.sensor_indexes[idx];
-      auto range = mj_lidar_data_->sensordata[i];
+      auto range = mj_lidar_data_[i];
       RCLCPP_DEBUG_STREAM(node_->get_logger(), "  sensor_indexes[" << idx << "] = " << lidar.sensor_indexes[idx]
-                                                                   << " - " << mj_lidar_data_->sensordata[i]);
+                                                                   << " - " << mj_lidar_data_[i]);
 
       if (range < lidar.range_min || range > lidar.range_max)
       {
