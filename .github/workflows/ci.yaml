@@ -18,6 +18,11 @@ on:
       - '*'
   workflow_dispatch:
 
+# Do not run multiple jobs for the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build_and_test:
     runs-on: ubuntu-latest
