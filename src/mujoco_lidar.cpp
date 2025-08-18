@@ -248,6 +248,9 @@ void MujocoLidar::update()
   }
 
   // Step 2: Copy sensor information for lidar to the relevant containers, filtering as needed
+  // TODO: This could be more efficient if we made assumptions about sensor data for a specific lidar
+  //       sensor being contiguous in sensordata. However, we haven't noted any issues with this
+  //       as is, and it is objectively more flexible. Leaving it for now.
   for (auto& lidar : lidar_sensors_)
   {
     RCLCPP_DEBUG_STREAM(node_->get_logger(), "Lidar Sensor: " << lidar.name);
