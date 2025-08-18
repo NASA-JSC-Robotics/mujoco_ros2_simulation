@@ -34,11 +34,11 @@ pre-commit-check:
 build_and_test:
   stage: build_and_test
   image:
-    name: js-er-code.jsc.nasa.gov:5005/ci_build/docker_with_nasa_certs:latest
+    name: ${CI_SERVER_HOST}:5005/ci_build/docker_with_nasa_certs:latest
   before_script:
     - docker info
     - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
-    - echo -e "machine js-er-code.jsc.nasa.gov\nlogin gitlab-ci-token\npassword ${CI_JOB_TOKEN}" > ~/.netrc
+    - echo -e "machine ${CI_SERVER_HOST}\nlogin gitlab-ci-token\npassword ${CI_JOB_TOKEN}" > ~/.netrc
   script:
     - DOCKER_BUILDKIT=1 docker build
         -t "${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}"
