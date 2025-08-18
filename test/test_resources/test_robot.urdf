@@ -171,7 +171,7 @@
     <!-- Lidar sensors are matched to a set of rangefinder sensors in the MJCF, which should be -->
     <!-- generated with "replicate" and will generally be of the form "<sensor_name>-01". -->
     <!-- We assume the lidar sensor starts at angle 0, increments by the specified `angle_increment`, and -->
-    <!-- that there are exactly `num_rangefinders` all named from <sensor_name>-000 to -->
+    <!-- that there are exactly `num_rangefinders` all named from <sensor_name>-000 to the max -->
     <!-- <sensor_name>-<num_rangefinders> -->
     <sensor name="lidar">
       <param name="frame_name">lidar_sensor_frame</param>
