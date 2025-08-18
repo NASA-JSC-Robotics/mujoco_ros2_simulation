@@ -1,0 +1,48 @@
+name: build_and_test
+
+on:
+  push:
+    tags:
+      - '*'
+    branches:
+      - humble
+      - jazzy
+      - '*-devel'
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+    branches:
+      - '*'
+  workflow_dispatch:
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          file: docker/Dockerfile
+          tags: mujoco_ros2_simulation:${{ github.head_ref || github.ref_name }}
+          target: mujoco_ros
+          push: false
+          load: true
+      - name: Run tests
+        run: |
+          docker run --rm \
+            mujoco_ros2_simulation:${{ github.head_ref || github.ref_name }} \
+            bash -c "
+              colcon test &&
+              colcon test-result --verbose
+            "
+      - name: Clean up Docker image
+        if: always()
+        run: |
+          docker image rm --force mujoco_ros2_simulation:${{ github.head_ref || github.ref_name }} || true

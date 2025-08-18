@@ -1,0 +1,23 @@
+name: format
+
+on:
+  push:
+    tags:
+      - '*'
+    branches:
+      - humble
+      - jazzy
+      - '*-devel'
+  pull_request:
+    branches:
+      - '*'
+  workflow_dispatch:
+
+jobs:
+  pre-commit:
+    name: pre-commit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+      - uses: pre-commit/action@v3.0.1
