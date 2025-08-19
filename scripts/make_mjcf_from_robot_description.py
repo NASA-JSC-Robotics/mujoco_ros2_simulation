@@ -479,15 +479,16 @@ def get_processed_mujoco_inputs(processed_inputs_element):
     """
     Returns the processed inputs as dictionaries from the specified processed_inputs_element.
 
-    Right now this supports tags for decomposing meshes and adding cameras to sites.
+    Right now this supports tags for decomposing meshes and adding cameras or replicate tags to sites.
     """
 
     decompose_dict = dict()
     cameras_dict = dict()
     modify_element_dict = dict()
+    replicate_dict = dict()
 
     if not processed_inputs_element:
-        return decompose_dict, cameras_dict, modify_element_dict
+        return decompose_dict, cameras_dict, modify_element_dict, replicate_dict
 
     for child in processed_inputs_element.childNodes:
         if child.nodeType != child.ELEMENT_NODE:
@@ -516,6 +517,17 @@ def get_processed_mujoco_inputs(processed_inputs_element):
 
             print(f"Will add camera ({camera_name}) for site ({site_name})")
 
+        # Grab replicates
+        if child.nodeType == child.ELEMENT_NODE and child.tagName == "replicate":
+            replicate_element = child
+            site_name = replicate_element.getAttribute("site")
+
+            # We don't need this in the MJCF
+            replicate_element.removeAttribute("site")
+            replicate_dict[site_name] = replicate_element
+
+            print(f"Will add replicate tag at site ({site_name})")
+
         # Grab modify element information
         if child.nodeType == child.ELEMENT_NODE and child.tagName == "modify_element":
             modify_element_element = child
@@ -537,7 +549,7 @@ def get_processed_mujoco_inputs(processed_inputs_element):
             for key, value in attr_dict.items():
                 print(f"  {key}: {value}")
 
-    return decompose_dict, cameras_dict, modify_element_dict
+    return decompose_dict, cameras_dict, modify_element_dict, replicate_dict
 
 
 def parse_inputs_xml(filename=None):
@@ -766,6 +778,50 @@ def add_cameras_from_sites(dom, cameras_dict):
     return dom
 
 
+def add_replicates_from_sites(dom, replicates_dict):
+    """
+    Copies in a replicates tag from mujoco inputs below the specified site name.
+
+    Replicates must be under to a body, so we add a massless body with an identical transform to support
+    attaching the sensor's replicates.
+
+    We assume that the site in the URDF has the Z-axis pointed up, whereas the rangefinder's sensor has the
+    Z-axis pointed along the sensor and rotate about the Y-axis. For the sake of this conversion, we assume
+    that the first replicate's Z-axis is in-line with the URDF's X-axis. So we rotate the position from the
+    matched site in the URDF accordingly.
+
+    If you draw this out, the XYZ euler transform from one to the other should be [-pi/2, pi/2, 0].
+    """
+
+    x_form = [0.5, -0.5, 0.5, -0.5]  # -pi/2 around x, pi/2 about y
+
+    # Construct all cameras for relevant sites in xml and add them as children to the same parent
+    for node in dom.getElementsByTagName("site"):
+        site_name = node.getAttribute("name")
+        if site_name in replicates_dict:
+            new_body = dom.createElement("body")
+            new_body.setAttribute("name", site_name + "_lidar_body")
+            new_body.setAttribute("pos", node.getAttribute("pos"))
+
+            quat = [float(x) for x in node.getAttribute("quat").split()]
+            lidar_quat = rotate_quaternion(x_form, quat)
+            new_body.setAttribute("quat", " ".join(map(str, lidar_quat)))
+
+            replicate = replicates_dict[site_name]
+            new_body.appendChild(replicate)
+
+            print(f"Adding replicates to {site_name}, attributes:")
+            print("    pos: ", new_body.getAttribute("pos"))
+            print("    quat: ", new_body.getAttribute("quat"))
+            for i in range(replicate.attributes.length):
+                attr = replicate.attributes.item(i)
+                print(f"  {attr.name}: {attr.value}")
+
+            node.parentNode.appendChild(new_body)
+
+    return dom
+
+
 def add_modifiers(dom, modify_element_dict):
     """
     Modify elements that are a part of the worldbody tag by adding attributes.
@@ -818,6 +874,7 @@ def fix_mujoco_description(
     decompose_dict,
     cameras_dict,
     modify_element_dict,
+    replicate_dict,
     request_add_free_joint,
 ):
     """
@@ -849,6 +906,9 @@ def fix_mujoco_description(
 
     # Add cameras based on site names
     dom = add_cameras_from_sites(dom, cameras_dict)
+
+    # Add replicates based on site names
+    dom = add_replicates_from_sites(dom, replicate_dict)
 
     # modify elements based on modify_element tags
     dom = add_modifiers(dom, modify_element_dict)
@@ -1004,7 +1064,7 @@ def main(args=None):
 
     # Part inputs data
     raw_inputs, processed_inputs = parse_inputs_xml(parsed_args.mujoco_inputs)
-    decompose_dict, cameras_dict, modify_element_dict = get_processed_mujoco_inputs(processed_inputs)
+    decompose_dict, cameras_dict, modify_element_dict, replicate_dict = get_processed_mujoco_inputs(processed_inputs)
 
     # Grab the output directory and ensure it ends with '/'
     output_filepath = os.path.join(parsed_args.output, "")
@@ -1039,6 +1099,7 @@ def main(args=None):
         decompose_dict,
         cameras_dict,
         modify_element_dict,
+        replicate_dict,
         request_add_free_joint,
     )
 
