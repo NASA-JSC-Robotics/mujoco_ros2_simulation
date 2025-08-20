@@ -425,7 +425,7 @@ hardware_interface::CallbackReturn MujocoSystemInterface::on_init(const hardware
   lidar_sensors_ = std::make_unique<MujocoLidar>(mujoco_node_, sim_mutex_, mj_data_, mj_model_, lidar_publish_rate);
   if (!lidar_sensors_->register_lidar(info))
   {
-    RCLCPP_INFO(rclcpp::get_logger("MujocoSystemInterface"), "Failed to initializ lidar, exiting...");
+    RCLCPP_INFO(rclcpp::get_logger("MujocoSystemInterface"), "Failed to initialize lidar, exiting...");
     return hardware_interface::CallbackReturn::FAILURE;
   }
 
