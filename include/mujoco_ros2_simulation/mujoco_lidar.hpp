@@ -113,7 +113,7 @@ private:
   // Vector container to copy sensordata out of mj_data_
   std::vector<mjtNum> mj_lidar_data_;
 
-  // LaserScan publishing rate
+  // LaserScan publishing rate in Hz
   double lidar_publish_rate_;
 
   // Rendering options for the cameras, currently hard coded to defaults

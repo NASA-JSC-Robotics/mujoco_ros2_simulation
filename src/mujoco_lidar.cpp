@@ -100,7 +100,6 @@ std::optional<LidarData> get_lidar_data(const hardware_interface::HardwareInfo& 
   // Configure the static parameters of the laserscan message
   lidar_sensor.laser_scan_msg.header.frame_id = lidar_sensor.frame_name;
   lidar_sensor.laser_scan_msg.time_increment = 0.0;  // Does this matter?
-  lidar_sensor.laser_scan_msg.scan_time = 0.0;       // Does this matter?
   lidar_sensor.laser_scan_msg.angle_min = lidar_sensor.min_angle;
   lidar_sensor.laser_scan_msg.angle_max = lidar_sensor.max_angle;
   lidar_sensor.laser_scan_msg.angle_increment = lidar_sensor.angle_increment;
@@ -168,9 +167,12 @@ bool MujocoLidar::register_lidar(const hardware_interface::HardwareInfo& hardwar
         return false;
       }
 
-      // Manually configure the publisher
+      // Setup remaining msg params and publisher for the sensor
       auto lidar = new_data_maybe.value();
       lidar.scan_pub = node_->create_publisher<sensor_msgs::msg::LaserScan>(lidar.laserscan_topic, 1);
+
+      // We may someday want to compute this on the fly, but since everything is fixed this should be fine for now.
+      lidar.laser_scan_msg.scan_time = 1.0 / lidar_publish_rate_;
 
       // Note that we have added the sensor
       RCLCPP_INFO_STREAM(node_->get_logger(), "Adding lidar sensor: " << lidar.name << ", idx: " << idx);
