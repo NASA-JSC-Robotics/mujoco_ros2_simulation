@@ -178,7 +178,6 @@ bool MujocoLidar::register_lidar(const hardware_interface::HardwareInfo& hardwar
       RCLCPP_INFO_STREAM(node_->get_logger(), "    min_angle: " << lidar.min_angle);
       RCLCPP_INFO_STREAM(node_->get_logger(), "    max_angle: " << lidar.max_angle);
       RCLCPP_INFO_STREAM(node_->get_logger(), "    angle_increment: " << lidar.angle_increment);
-      RCLCPP_INFO_STREAM(node_->get_logger(), "    max_angle: " << lidar.max_angle);
       RCLCPP_INFO_STREAM(node_->get_logger(), "    range_min: " << lidar.range_min);
       RCLCPP_INFO_STREAM(node_->get_logger(), "    range_max: " << lidar.range_max);
 

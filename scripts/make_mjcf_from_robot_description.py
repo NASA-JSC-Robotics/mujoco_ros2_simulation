@@ -481,7 +481,7 @@ def get_processed_mujoco_inputs(processed_inputs_element):
     """
     Returns the processed inputs as dictionaries from the specified processed_inputs_element.
 
-    Right now this supports tags for decomposing meshes and adding cameras or replicate tags to sites.
+    Right now this supports tags for decomposing meshes and attaching cameras or lidar sensors to sites.
     """
 
     decompose_dict = dict()
@@ -837,7 +837,7 @@ def add_lidar_from_sites(dom, lidar_dict):
 
     x_form = [0.5, 0.5, 0.5, 0.5]  # pi/2 around x, pi/2 about y
 
-    # Construct all cameras for relevant sites in xml and add them as children to the same parent
+    # Construct all lidar sensor bodies for relevant sites in xml and add them as children to the same parent
     for node in dom.getElementsByTagName("site"):
         site_name = node.getAttribute("name")
         if site_name in lidar_dict:
