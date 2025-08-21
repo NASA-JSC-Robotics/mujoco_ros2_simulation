@@ -161,6 +161,9 @@ void MujocoCameras::update_loop()
   mjv_defaultScene(&mjv_scn_);
   mjr_defaultContext(&mjr_con_);
 
+  // Turn rangefinder rendering off so we don't get rays in camera images
+  mjv_opt_.flags[mjtVisFlag::mjVIS_RANGEFINDER] = 0;
+
   // create scene and context
   mjv_makeScene(mj_model_, &mjv_scn_, 2000);
   mjr_makeContext(mj_model_, &mjr_con_, mjFONTSCALE_150);
