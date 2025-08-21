@@ -53,8 +53,9 @@ public:
   /**
    * @brief ros2_control SystemInterface to wrap Mujocos Simulate application.
    *
-   * Supports Actuators, Force Torque/IMU Sensors, and RGB-D camera simulations. For more information
-   * on configuration check the comment strings below.
+   * Supports Actuators, Force Torque/IMU Sensors, and RGB-D camera, and Lidar Sensors in ROS 2 simulations.
+   * For more information on configuration refer to the docs, check the comment strings below, and refer to
+   * the example in the test folder.
    */
   MujocoSystemInterface();
   ~MujocoSystemInterface() override;
