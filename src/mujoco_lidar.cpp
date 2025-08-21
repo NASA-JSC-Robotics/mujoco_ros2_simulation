@@ -89,7 +89,8 @@ std::optional<LidarData> get_lidar_data(const hardware_interface::HardwareInfo& 
   lidar_sensor.min_angle = std::stod(*min_angle);
   lidar_sensor.max_angle = std::stod(*max_angle);
   lidar_sensor.angle_increment = std::stod(*angle_increment);
-  lidar_sensor.num_rangefinders = static_cast<int>((lidar_sensor.max_angle - lidar_sensor.min_angle) / lidar_sensor.angle_increment) + 1;
+  lidar_sensor.num_rangefinders =
+      static_cast<int>((lidar_sensor.max_angle - lidar_sensor.min_angle) / lidar_sensor.angle_increment) + 1;
 
   lidar_sensor.laserscan_topic = laserscan_topic.has_value() ? laserscan_topic.value() : "/scan";
   lidar_sensor.range_min = range_min.has_value() ? std::stod(range_min.value()) : 0.0;

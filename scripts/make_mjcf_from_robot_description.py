@@ -610,7 +610,12 @@ def parse_inputs_xml(filename=None):
             <!-- In the URDF, we assume that that the sensor frame has the Z-axis pointed directly up in the sensor -->
             <!-- frame. This tag will create rangefinders in the MJCF between min_angle and max_angle at each -->
             <!-- angle_increment, and the drivers combine them into a single LaserScan message. -->
-            <lidar ref_site="lidar_sensor_frame" sensor_name="rf" min_angle="0" max_angle="1.57" angle_increment="0.025" />
+            <lidar ref_site="lidar_sensor_frame"
+                   sensor_name="rf"
+                   min_angle="0"
+                   max_angle="1.57"
+                   angle_increment="0.025"
+            />
 
         </processed_inputs>
     </mujoco_inputs>
@@ -767,10 +772,10 @@ def euler_to_quaternion(roll, pitch, yaw):
     """
     Convert an Euler RPY angles to a quaternion, [w, x, y, z]
     """
-    qw = np.cos(roll/2) * np.cos(pitch/2) * np.cos(yaw/2) + np.sin(roll/2) * np.sin(pitch/2) * np.sin(yaw/2)
-    qx = np.sin(roll/2) * np.cos(pitch/2) * np.cos(yaw/2) - np.cos(roll/2) * np.sin(pitch/2) * np.sin(yaw/2)
-    qy = np.cos(roll/2) * np.sin(pitch/2) * np.cos(yaw/2) + np.sin(roll/2) * np.cos(pitch/2) * np.sin(yaw/2)
-    qz = np.cos(roll/2) * np.cos(pitch/2) * np.sin(yaw/2) - np.sin(roll/2) * np.sin(pitch/2) * np.cos(yaw/2)
+    qw = np.cos(roll / 2) * np.cos(pitch / 2) * np.cos(yaw / 2) + np.sin(roll / 2) * np.sin(pitch / 2) * np.sin(yaw / 2)
+    qx = np.sin(roll / 2) * np.cos(pitch / 2) * np.cos(yaw / 2) - np.cos(roll / 2) * np.sin(pitch / 2) * np.sin(yaw / 2)
+    qy = np.cos(roll / 2) * np.sin(pitch / 2) * np.cos(yaw / 2) + np.sin(roll / 2) * np.cos(pitch / 2) * np.sin(yaw / 2)
+    qz = np.cos(roll / 2) * np.cos(pitch / 2) * np.sin(yaw / 2) - np.sin(roll / 2) * np.sin(pitch / 2) * np.cos(yaw / 2)
 
     return [qw, qx, qy, qz]
 
@@ -843,7 +848,7 @@ def add_lidar_from_sites(dom, lidar_dict):
         if site_name in lidar_dict:
             replicate = lidar_dict[site_name]
 
-            # Handle conversion of the frames by applying the site transform, rangefinder tranform, then
+            # Handle conversion of the frames by applying the site transform, rangefinder transform, then
             # min_angle transform (rotation about Y)
             site_quat = [float(x) for x in node.getAttribute("quat").split()]
             min_angle = float(replicate.getAttribute("min_angle"))
