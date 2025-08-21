@@ -16,8 +16,22 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get update && \
     apt-get install -y \
       libglfw3-dev \
-      ros-${ROS_DISTRO}-xacro\
-      wget
+      ros-${ROS_DISTRO}-xacro \
+      ros-${ROS_DISTRO}-urdfdom-py \
+      wget \
+      libxi6 \
+      libxkbcommon0 \
+      python3-pip
+
+# Install extra python dependencies
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    pip install mujoco obj2mjcf
+
+# There's no build for arm64 on linux, so just ignore failures here if that's the case
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    pip install bpy==4.0.0 --extra-index-url https://download.blender.org/pypi/ || true
 
 # Configure and install MuJoCo
 ENV MUJOCO_VERSION=${MUJOCO_VERSION}
