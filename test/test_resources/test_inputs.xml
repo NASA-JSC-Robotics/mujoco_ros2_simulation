@@ -32,10 +32,12 @@
     <!-- The position and quaterinion will be filled in by the converter -->
     <camera site="camera_color_optical_frame" name="camera" fovy="58" mode="fixed" resolution="640 480"/>
 
-    <!-- Adds a replicate tag below a site tag to support a lidar sensor -->
-    <replicate site="lidar_sensor_frame" count="12" sep="-" offset="0 0 0" euler="0 0.025 0">
-      <site name="rf" size="0.01" pos="0.0 0.0 0.0" quat="0.0 0.0 0.0 1.0"/>
-    </replicate>
+    <!-- Adds a lidar tag below a site tag to support a lidar sensor. -->
+    <!-- In the URDF, we assume that that the sensor frame has the Z-axis pointed directly up in the sensor -->
+    <!-- frame. This tag will create rangefinders in the MJCF between min_angle and max_angle at each -->
+    <!-- angle_increment rotated about the replicate frame's Y axis. The hardware intercface then combines -->
+    <!-- them into a single LaserScan message. -->
+    <lidar ref_site="lidar_sensor_frame" sensor_name="rf" min_angle="-0.3" max_angle="0.3" angle_increment="0.025" />
 
     <!-- The element with the type and name as listed below will be modified with the remaining attributes -->
     <!-- If the attribute already existed, it will be overwritten -->

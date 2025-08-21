@@ -26,9 +26,9 @@
     <site name="world" pos="0 0 0" quat="1.0 0 0 0"/>
     <site name="base" pos="0 0 0" quat="1.0 0 0 0"/>
     <site name="lidar_sensor_frame" pos="1.0 2.0 0" quat="0.7071054825112363 0 0 -0.7071080798594737"/>
-    <body name="lidar_sensor_frame_lidar_body" pos="1.0 2.0 0" quat="-1.2986741186882256e-06 1.2986741186882256e-06 0.707106781185355 -0.707106781185355">
-      <replicate count="12" sep="-" offset="0 0 0" euler="0 0.025 0">
-        <site name="rf" size="0.01" pos="0.0 0.0 0.0" quat="0.0 0.0 0.0 1.0"/>
+    <body name="lidar_sensor_frame_lidar_body" pos="1.0 2.0 0" quat="0.6991665401770936 0.6991665401770936 -0.10567000093116563 -0.10567000093116563">
+      <replicate site="lidar_sensor_frame" count="24" sep="-" offset="0 0 0" euler="0 0.025 0">
+        <site name="rf" pos="0.0 0.0 0.0" quat="0.0 0.0 0.0 1.0"/>
       </replicate>
     </body>
   </worldbody>
