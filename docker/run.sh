@@ -14,6 +14,7 @@ docker run --rm \
            -e QT_X11_NO_MITSHM=1 \
            --mount type=bind,src=/tmp/.X11-unix,dst=/tmp/.X11-unix,ro \
            --mount type=bind,src=.,dst="/opt/mujoco/ws/src/mujoco_ros2_simulation" \
+           --name ${IMAGE_NAME} \
            ${IMAGE_NAME}:${TAG} \
            bash
 
