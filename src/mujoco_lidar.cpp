@@ -69,14 +69,15 @@ std::optional<LidarData> get_lidar_data(const hardware_interface::HardwareInfo& 
   };
 
   auto frame_name = get_parameter("frame_name");
+  auto min_angle = get_parameter("min_angle");
+  auto max_angle = get_parameter("max_angle");
   auto angle_increment = get_parameter("angle_increment");
-  auto num_rangefinders = get_parameter("num_rangefinders");
   auto laserscan_topic = get_parameter("laserscan_topic");
   auto range_min = get_parameter("range_min");
   auto range_max = get_parameter("range_max");
 
   // If any required parameters are missing fire off an error.
-  if (!frame_name || !angle_increment || !num_rangefinders)
+  if (!frame_name || !angle_increment || !min_angle || !max_angle)
   {
     return std::nullopt;
   }
@@ -85,15 +86,14 @@ std::optional<LidarData> get_lidar_data(const hardware_interface::HardwareInfo& 
   LidarData lidar_sensor;
   lidar_sensor.name = name;
   lidar_sensor.frame_name = *frame_name;
-  lidar_sensor.num_rangefinders = std::stoi(*num_rangefinders);
+  lidar_sensor.min_angle = std::stod(*min_angle);
+  lidar_sensor.max_angle = std::stod(*max_angle);
   lidar_sensor.angle_increment = std::stod(*angle_increment);
+  lidar_sensor.num_rangefinders = static_cast<int>((lidar_sensor.max_angle - lidar_sensor.min_angle) / lidar_sensor.angle_increment) + 1;
+
   lidar_sensor.laserscan_topic = laserscan_topic.has_value() ? laserscan_topic.value() : "/scan";
   lidar_sensor.range_min = range_min.has_value() ? std::stod(range_min.value()) : 0.0;
   lidar_sensor.range_max = range_max.has_value() ? std::stod(range_max.value()) : 1000.0;
-
-  // Compute based on ROS control config (could we get this from sites or something?)
-  lidar_sensor.min_angle = 0.0;
-  lidar_sensor.max_angle = lidar_sensor.angle_increment * lidar_sensor.num_rangefinders;
   lidar_sensor.sensor_indexes.resize(lidar_sensor.num_rangefinders);
 
   // Configure the static parameters of the laserscan message
