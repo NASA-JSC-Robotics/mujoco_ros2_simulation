@@ -1,4 +1,13 @@
-ARG ROS_DISTRO=humble
+ARG ROS_DISTRO=jazzy
+
+# This layer grabs package manifests from the src directory for preserving rosdep installs.
+# This can significantly speed up rebuilds for the base package when src contents have changed.
+FROM alpine:latest AS package-manifests
+
+# Copy in the src directory, then remove everything that isn't a manifest or an ignore file.
+COPY . /src/
+RUN find /src -type f ! -name "package.xml" ! -name "COLCON_IGNORE" -delete && \
+    find /src -type d -empty -delete
 
 FROM ros:${ROS_DISTRO} AS mujoco_ros
 
@@ -16,14 +25,25 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get update && \
     apt-get install -y \
       libglfw3-dev \
-      ros-${ROS_DISTRO}-xacro \
-      ros-${ROS_DISTRO}-urdfdom-py \
-      wget \
+      libvirglrenderer1 \
+      libgl1-mesa-dri \
+      libglx-mesa0 \
       libxi6 \
       libxkbcommon0 \
-      python3-pip
+      mesa-utils \
+      python3-pip \
+      wget
+
+# Install additional ROS deps
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && \
+    apt-get install -y \
+      ros-${ROS_DISTRO}-xacro \
+      ros-${ROS_DISTRO}-urdfdom-py
 
 # Install extra python dependencies
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     pip install mujoco obj2mjcf
@@ -42,11 +62,13 @@ RUN wget https://github.com/google-deepmind/mujoco/releases/download/${MUJOCO_VE
 RUN mkdir -p /home/mujoco
 RUN tar -xzf "mujoco-${MUJOCO_VERSION}-linux-${CPU_ARCH}.tar.gz" -C $(dirname "${MUJOCO_DIR}")
 
-# Copy source
+# Setup a ROS workspace
 ENV ROS_WS="/opt/mujoco/ws"
 RUN mkdir -p ${ROS_WS}/src/mujoco_ros2_simulation
 WORKDIR ${ROS_WS}
-COPY . src/mujoco_ros2_simulation/
+
+# Copy package manifests for installing rosdeps
+COPY --from=package-manifests /src/ ${ROS_WS}/src/mujoco_ros2_simulation
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
@@ -54,6 +76,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get update && \
     rosdep update && \
     rosdep install -iry --from-paths src/
+
+# Copy remaining source
+COPY . ${ROS_WS}/src/mujoco_ros2_simulation/
 
 RUN source /opt/ros/${ROS_DISTRO}/setup.bash \
     && colcon build --cmake-args -DBUILD_TESTING=ON

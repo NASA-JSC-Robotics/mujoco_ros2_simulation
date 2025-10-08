@@ -1,0 +1,36 @@
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: mujoco_ros
+      tags:
+        - mujoco_ros:${ROS_DISTRO:-jazzy}
+      args:
+        - ROS_DISTRO=${ROS_DISTRO:-jazzy}
+        - CPU_ARCH=${CPU_ARCH:-x86_64}
+    # Ensures signals are actually passed and reaped in the container for shutdowns
+    # https://docs.docker.com/compose/compose-file/compose-file-v3/#init
+    init: true
+    stdin_open: true
+    tty: true
+    network_mode: host
+    # Allows graphical programs in the container.
+    environment:
+      - DISPLAY
+      - QT_X11_NO_MITSHM=1
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      # Pass the ROS_DOMAIN_ID from the host, if available, otherwise we default to 1 to avoid spamming networks
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-1}
+      # TODO: Running a 24.04 container on a 22.04 host can cause issues with OpenGL context. We use the line
+      # below to tell the drivers to use the virtual pipe, though it may need to be removed for some setups.
+      # Users with GPUs or in different setups may need to tweak this or pull in additional NVIDIA settings.
+      - MESA_LOADER_DRIVER_OVERRIDE=virpipe
+    volumes:
+      # Mount the source code.
+      - ./:/opt/mujoco/ws/src/mujoco_ros2_simulation:rw
+      # Allows graphical programs in the container.
+      - x11_sock:/tmp/.X11-unix
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ${XAUTHORITY:-$HOME/.Xauthority}:/root/.Xauthority
+    command: sleep infinity
