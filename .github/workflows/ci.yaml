@@ -5,6 +5,7 @@ on:
     tags:
       - '*'
     branches:
+      - main
       - humble
       - jazzy
       - '*-devel'
@@ -25,6 +26,11 @@ concurrency:
 
 jobs:
   build_and_test:
+    # TODO: I don't think we'll be able to make this entire ROS distro agnostic because of difference
+    # between hardware interfaces in different versions. But we can hope.
+    strategy:
+      matrix:
+        ros_distro: [humble, jazzy]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -37,6 +43,8 @@ jobs:
           file: docker/Dockerfile
           tags: mujoco_ros2_simulation:${{ github.head_ref || github.ref_name }}
           target: mujoco_ros
+          build-args: |
+            ROS_DISTRO=${{ matrix.ros_distro }}
           push: false
           load: true
       - name: Run tests
