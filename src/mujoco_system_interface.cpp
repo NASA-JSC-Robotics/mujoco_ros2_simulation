@@ -290,6 +290,10 @@ MujocoSystemInterface::~MujocoSystemInterface()
   {
     mj_deleteData(mj_data_);
   }
+  if (mj_data_control_)
+  {
+    mj_deleteData(mj_data_control_);
+  }
   if (mj_model_)
   {
     mj_deleteModel(mj_model_);
@@ -394,8 +398,9 @@ hardware_interface::CallbackReturn MujocoSystemInterface::on_init(const hardware
   {
     std::unique_lock<std::recursive_mutex> lock(*sim_mutex_);
     mj_data_ = mj_makeData(mj_model_);
+    mj_data_control_ = mj_makeData(mj_model_);
   }
-  if (!mj_data_)
+  if (!mj_data_ || !mj_data_control_)
   {
     RCLCPP_FATAL(rclcpp::get_logger("MujocoSystemInterface"), "Could not allocate mjData for '%s'", model_path_.c_str());
     return hardware_interface::CallbackReturn::ERROR;
@@ -737,43 +742,41 @@ MujocoSystemInterface::perform_command_mode_switch(const std::vector<std::string
 hardware_interface::return_type MujocoSystemInterface::read(const rclcpp::Time& /*time*/,
                                                             const rclcpp::Duration& /*period*/)
 {
-  std::lock_guard<std::recursive_mutex> lock(*sim_mutex_);
-
   // Joint states
   for (auto& joint_state : joint_states_)
   {
-    joint_state.position = mj_data_->qpos[joint_state.mj_pos_adr];
-    joint_state.velocity = mj_data_->qvel[joint_state.mj_vel_adr];
-    joint_state.effort = mj_data_->qfrc_actuator[joint_state.mj_vel_adr];
+    joint_state.position = mj_data_control_->qpos[joint_state.mj_pos_adr];
+    joint_state.velocity = mj_data_control_->qvel[joint_state.mj_vel_adr];
+    joint_state.effort = mj_data_control_->qfrc_actuator[joint_state.mj_vel_adr];
   }
 
   // IMU Sensor data
   for (auto& data : imu_sensor_data_)
   {
-    data.orientation.data.w() = mj_data_->sensordata[data.orientation.mj_sensor_index];
-    data.orientation.data.x() = mj_data_->sensordata[data.orientation.mj_sensor_index + 1];
-    data.orientation.data.y() = mj_data_->sensordata[data.orientation.mj_sensor_index + 2];
-    data.orientation.data.z() = mj_data_->sensordata[data.orientation.mj_sensor_index + 3];
+    data.orientation.data.w() = mj_data_control_->sensordata[data.orientation.mj_sensor_index];
+    data.orientation.data.x() = mj_data_control_->sensordata[data.orientation.mj_sensor_index + 1];
+    data.orientation.data.y() = mj_data_control_->sensordata[data.orientation.mj_sensor_index + 2];
+    data.orientation.data.z() = mj_data_control_->sensordata[data.orientation.mj_sensor_index + 3];
 
-    data.angular_velocity.data.x() = mj_data_->sensordata[data.angular_velocity.mj_sensor_index];
-    data.angular_velocity.data.y() = mj_data_->sensordata[data.angular_velocity.mj_sensor_index + 1];
-    data.angular_velocity.data.z() = mj_data_->sensordata[data.angular_velocity.mj_sensor_index + 2];
+    data.angular_velocity.data.x() = mj_data_control_->sensordata[data.angular_velocity.mj_sensor_index];
+    data.angular_velocity.data.y() = mj_data_control_->sensordata[data.angular_velocity.mj_sensor_index + 1];
+    data.angular_velocity.data.z() = mj_data_control_->sensordata[data.angular_velocity.mj_sensor_index + 2];
 
-    data.linear_acceleration.data.x() = mj_data_->sensordata[data.linear_acceleration.mj_sensor_index];
-    data.linear_acceleration.data.y() = mj_data_->sensordata[data.linear_acceleration.mj_sensor_index + 1];
-    data.linear_acceleration.data.z() = mj_data_->sensordata[data.linear_acceleration.mj_sensor_index + 2];
+    data.linear_acceleration.data.x() = mj_data_control_->sensordata[data.linear_acceleration.mj_sensor_index];
+    data.linear_acceleration.data.y() = mj_data_control_->sensordata[data.linear_acceleration.mj_sensor_index + 1];
+    data.linear_acceleration.data.z() = mj_data_control_->sensordata[data.linear_acceleration.mj_sensor_index + 2];
   }
 
   // FT Sensor data
   for (auto& data : ft_sensor_data_)
   {
-    data.force.data.x() = -mj_data_->sensordata[data.force.mj_sensor_index];
-    data.force.data.y() = -mj_data_->sensordata[data.force.mj_sensor_index + 1];
-    data.force.data.z() = -mj_data_->sensordata[data.force.mj_sensor_index + 2];
+    data.force.data.x() = -mj_data_control_->sensordata[data.force.mj_sensor_index];
+    data.force.data.y() = -mj_data_control_->sensordata[data.force.mj_sensor_index + 1];
+    data.force.data.z() = -mj_data_control_->sensordata[data.force.mj_sensor_index + 2];
 
-    data.torque.data.x() = -mj_data_->sensordata[data.torque.mj_sensor_index];
-    data.torque.data.y() = -mj_data_->sensordata[data.torque.mj_sensor_index + 1];
-    data.torque.data.z() = -mj_data_->sensordata[data.torque.mj_sensor_index + 2];
+    data.torque.data.x() = -mj_data_control_->sensordata[data.torque.mj_sensor_index];
+    data.torque.data.y() = -mj_data_control_->sensordata[data.torque.mj_sensor_index + 1];
+    data.torque.data.z() = -mj_data_control_->sensordata[data.torque.mj_sensor_index + 2];
   }
 
   return hardware_interface::return_type::OK;
@@ -782,8 +785,6 @@ hardware_interface::return_type MujocoSystemInterface::read(const rclcpp::Time& 
 hardware_interface::return_type MujocoSystemInterface::write(const rclcpp::Time& /*time*/,
                                                              const rclcpp::Duration& /*period*/)
 {
-  std::lock_guard<std::recursive_mutex> lock(*sim_mutex_);
-
   // Update mimic joints
   for (auto& joint_state : joint_states_)
   {
@@ -810,15 +811,15 @@ hardware_interface::return_type MujocoSystemInterface::write(const rclcpp::Time&
 
     if (joint_state.is_position_control_enabled)
     {
-      mj_data_->ctrl[joint_state.mj_actuator_id] = joint_state.position_command;
+      mj_data_control_->ctrl[joint_state.mj_actuator_id] = joint_state.position_command;
     }
     else if (joint_state.is_velocity_control_enabled)
     {
-      mj_data_->ctrl[joint_state.mj_actuator_id] = joint_state.velocity_command;
+      mj_data_control_->ctrl[joint_state.mj_actuator_id] = joint_state.velocity_command;
     }
     else if (joint_state.is_effort_control_enabled)
     {
-      mj_data_->ctrl[joint_state.mj_actuator_id] = joint_state.effort_command;
+      mj_data_control_->ctrl[joint_state.mj_actuator_id] = joint_state.effort_command;
     }
   }
 
@@ -1056,6 +1057,9 @@ void MujocoSystemInterface::set_initial_pose()
   {
     mj_data_->qpos[joint_state.mj_pos_adr] = joint_state.position;
   }
+
+  // Copy into the control data for reads
+  mj_copyData(mj_data_control_, mj_model_, mj_data_);
 }
 
 // simulate in background thread (while rendering in main thread)
@@ -1081,6 +1085,9 @@ void MujocoSystemInterface::PhysicsLoop()
     }
 
     {
+      // lock the sim mutex during the update
+      const std::unique_lock<std::recursive_mutex> lock(*sim_mutex_);
+
       // run only if model is present
       if (mj_model_)
       {
@@ -1115,12 +1122,10 @@ void MujocoSystemInterface::PhysicsLoop()
             syncSim = mj_data_->time;
             sim_->speed_changed = false;
 
-            {
-              // lock the sim mutex during the update
-              const std::unique_lock<std::recursive_mutex> lock(*sim_mutex_);
-              // run single step, let next iteration deal with timing
-              mj_step(mj_model_, mj_data_);
-            }
+            // Copy data to the control
+            mju_copy(mj_data_->ctrl, mj_data_control_->ctrl, mj_model_->nu);
+            // run single step, let next iteration deal with timing
+            mj_step(mj_model_, mj_data_);
 
             const char* message = Diverged(mj_model_->opt.disableflags, mj_data_);
             if (message)
@@ -1155,12 +1160,10 @@ void MujocoSystemInterface::PhysicsLoop()
               // inject noise
               sim_->InjectNoise();
 
-              {
-                // lock the sim mutex during the update
-                const std::unique_lock<std::recursive_mutex> lock(*sim_mutex_);
-                // call mj_step
-                mj_step(mj_model_, mj_data_);
-              }
+              // Copy data to the control
+              mju_copy(mj_data_->ctrl, mj_data_control_->ctrl, mj_model_->nu);
+              // call mj_step
+              mj_step(mj_model_, mj_data_);
 
               const char* message = Diverged(mj_model_->opt.disableflags, mj_data_);
               if (message)
@@ -1184,6 +1187,9 @@ void MujocoSystemInterface::PhysicsLoop()
           // save current state to history buffer
           if (stepped)
           {
+            // Update the control's read buffers if the data has changed
+            mj_copyData(mj_data_control_, mj_model_, mj_data_);
+
             sim_->AddToHistory();
           }
         }
@@ -1191,8 +1197,7 @@ void MujocoSystemInterface::PhysicsLoop()
         // paused
         else
         {
-          // lock the sim mutex during the update
-          const std::unique_lock<std::recursive_mutex> lock(*sim_mutex_);
+          mj_copyData(mj_data_control_, mj_model_, mj_data_);
 
           // run mj_forward, to update rendering and joint sliders
           mj_forward(mj_model_, mj_data_);

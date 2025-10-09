@@ -160,6 +160,9 @@ private:
   mjModel* mj_model_{ nullptr };
   mjData* mj_data_{ nullptr };
 
+  // Data container for control data
+  mjData* mj_data_control_{ nullptr };
+
   // For rendering
   mjvCamera cam_;
   mjvOption opt_;
