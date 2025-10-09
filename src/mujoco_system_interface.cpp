@@ -1081,9 +1081,6 @@ void MujocoSystemInterface::PhysicsLoop()
     }
 
     {
-      // lock the sim mutex during the update
-      const std::unique_lock<std::recursive_mutex> lock(*sim_mutex_);
-
       // run only if model is present
       if (mj_model_)
       {
@@ -1118,8 +1115,13 @@ void MujocoSystemInterface::PhysicsLoop()
             syncSim = mj_data_->time;
             sim_->speed_changed = false;
 
-            // run single step, let next iteration deal with timing
-            mj_step(mj_model_, mj_data_);
+            {
+              // lock the sim mutex during the update
+              const std::unique_lock<std::recursive_mutex> lock(*sim_mutex_);
+              // run single step, let next iteration deal with timing
+              mj_step(mj_model_, mj_data_);
+            }
+
             const char* message = Diverged(mj_model_->opt.disableflags, mj_data_);
             if (message)
             {
@@ -1153,8 +1155,13 @@ void MujocoSystemInterface::PhysicsLoop()
               // inject noise
               sim_->InjectNoise();
 
-              // call mj_step
-              mj_step(mj_model_, mj_data_);
+              {
+                // lock the sim mutex during the update
+                const std::unique_lock<std::recursive_mutex> lock(*sim_mutex_);
+                // call mj_step
+                mj_step(mj_model_, mj_data_);
+              }
+
               const char* message = Diverged(mj_model_->opt.disableflags, mj_data_);
               if (message)
               {
@@ -1184,6 +1191,9 @@ void MujocoSystemInterface::PhysicsLoop()
         // paused
         else
         {
+          // lock the sim mutex during the update
+          const std::unique_lock<std::recursive_mutex> lock(*sim_mutex_);
+
           // run mj_forward, to update rendering and joint sliders
           mj_forward(mj_model_, mj_data_);
           sim_->speed_changed = true;
