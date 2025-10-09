@@ -26,6 +26,9 @@ concurrency:
 
 jobs:
   build_and_test:
+    strategy:
+      matrix:
+        ros_distro: [jazzy, kilted, rolling]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -38,6 +41,8 @@ jobs:
           file: docker/Dockerfile
           tags: mujoco_ros2_simulation:${{ github.head_ref || github.ref_name }}
           target: mujoco_ros
+          build-args: |
+            ROS_DISTRO=${{ matrix.ros_distro }}
           push: false
           load: true
       - name: Run tests
