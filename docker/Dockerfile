@@ -46,7 +46,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    pip install mujoco obj2mjcf
+    pip install --ignore-installed mujoco obj2mjcf
 
 # There's no build for arm64 on linux, so just ignore failures here if that's the case
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
