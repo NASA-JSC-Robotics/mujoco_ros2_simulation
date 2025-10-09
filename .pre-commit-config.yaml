@@ -73,6 +73,8 @@ repos:
     hooks:
       - id: clang-format
         files: \.(c|cc|cxx|cpp|frag|glsl|h|hpp|hxx|ih|ispc|ipp|java|m|proto|vert)$
+        # Copied in source so ignore it for now
+        exclude: 'src/mujoco_ros2_control_node\.cpp'
 
   # TODO: Add ament checks for ROS packages, if required
 
