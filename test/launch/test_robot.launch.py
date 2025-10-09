@@ -67,7 +67,6 @@ def generate_launch_description():
             {"use_sim_time": True},
             controller_parameters,
         ],
-        remappings=[("~/robot_description", "/robot_description")],
     )
 
     spawn_joint_state_broadcaster = Node(
