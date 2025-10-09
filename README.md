@@ -10,7 +10,8 @@ Parts of this library are also based on the MoveIt [mujoco_ros2_control](https:/
 
 ## Installation
 
-This interface has only been tested against ROS 2 humble and MuJoCo `3.3.4`.
+This interface has only been tested against ROS 2 jazzy and MuJoCo `3.3.4`.
+It should also be compatible with kilted and rolling, but we do not actively maintain those.
 We assume all required ROS dependencies have been installed either manually or with `rosdep`.
 
 A local install of MuJoCo is required to build the application, this package will not handle it for you.
@@ -69,6 +70,22 @@ Just specify the plugin and point to a valid MJCF on launch:
       <param name="lidar_publish_rate">10.0</param>
     </hardware>
   ...
+```
+
+Due to compatibility issues, we use a [slightly modified ROS 2 control node](./src/mujoco_ros2_control_node.cpp).
+It is the same executable and parameters as the upstream, but requires updating the launchfile:
+
+```python
+    control_node = Node(
+        # Specify the control node from this package!
+        package="mujoco_ros2_simulation",
+        executable="ros2_control_node",
+        output="both",
+        parameters=[
+            {"use_sim_time": True},
+            controller_parameters,
+        ],
+    )
 ```
 
 ### Joints
