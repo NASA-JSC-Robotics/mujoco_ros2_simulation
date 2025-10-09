@@ -108,17 +108,18 @@ add_library(mujoco_ros2_simulation SHARED
     src/mujoco_cameras.cpp
     src/mujoco_lidar.cpp
 )
-ament_target_dependencies(mujoco_ros2_simulation
-  controller_manager
-  hardware_interface
-  pluginlib
-  rclcpp
-  rclcpp_lifecycle
-  sensor_msgs
-)
 target_link_libraries(mujoco_ros2_simulation
   ${MUJOCO_LIB}
+  ${sensor_msgs_TARGETS}
   mujoco::libsimulate
+  controller_manager::controller_manager
+  controller_manager::controller_manager_parameters
+  hardware_interface::hardware_interface
+  hardware_interface::mock_components
+  pluginlib::pluginlib
+  rclcpp::rclcpp
+  rclcpp_lifecycle::rclcpp_lifecycle
+  sensor_msgs::sensor_msgs_library
   Eigen3::Eigen
   Threads::Threads
   lodepng
