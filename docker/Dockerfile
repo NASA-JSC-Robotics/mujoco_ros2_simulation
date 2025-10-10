@@ -24,6 +24,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && \
     apt-get install -y \
+      gdb \
       libglfw3-dev \
       libvirglrenderer1 \
       libgl1-mesa-dri \
@@ -32,7 +33,10 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
       libxkbcommon0 \
       mesa-utils \
       python3-pip \
-      wget
+      tmux \
+      wget \
+      xterm \
+      vim
 
 # Install additional ROS deps
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -81,7 +85,10 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 COPY . ${ROS_WS}/src/mujoco_ros2_simulation/
 
 RUN source /opt/ros/${ROS_DISTRO}/setup.bash \
-    && colcon build --cmake-args -DBUILD_TESTING=ON
+    && colcon build \
+      --symlink-install \
+      --event-handlers console_direct+ \
+      --cmake-args "-DBUILD_TESTING=ON -DCMAKE_BUILD_TYPE=RelWithDebInfo"
 
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN echo "source /entrypoint.sh" >> ~/.bashrc
