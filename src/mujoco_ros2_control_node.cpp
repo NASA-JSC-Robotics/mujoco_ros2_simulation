@@ -127,6 +127,9 @@ int main(int argc, char ** argv)
       // physics loop will publish to the clock topic. To account for that, we must spin the executor
       // and the controller manager node to ensure the MuJoCo hardware interface is constructed and launched.
       // So instead, we just wait in the control loop so that the hardware interface can still start and run.
+      //
+      // TODO: Potentially remove this node depending on what comes out of the upstream PR:
+      // https://github.com/ros-controls/ros2_control/pull/2654
       cm->get_clock()->wait_until_started();
       cm->get_clock()->sleep_for(rclcpp::Duration::from_seconds(1.0 / cm->get_update_rate()));
 
