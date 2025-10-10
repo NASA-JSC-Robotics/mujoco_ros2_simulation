@@ -1,6 +1,9 @@
 # Mujoco To ROS Tools
 
-> **WARNING**: These tools are highly experimental. Expect things to be broken.
+> **NOTE**: TODO: This tool is broken on jazzy and beyond, stick with the `humble-devel` branch until https://github.com/NASA-JSC-Robotics/mujoco_ros2_simulation/issues/22 is resolve.
+
+> **WARNING**: These tools are highly experimental.
+Expect things to be broken.
 
 As Mujoco does not ingest URDFs, we have written a helper tool for converting URDF to MJCF to assist with converting a robot description to an MJCF.
 
