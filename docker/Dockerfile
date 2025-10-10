@@ -38,14 +38,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
       xterm \
       vim
 
-# Install additional ROS deps
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    apt-get update && \
-    apt-get install -y \
-      ros-${ROS_DISTRO}-xacro \
-      ros-${ROS_DISTRO}-urdfdom-py
-
 # Install extra python dependencies
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
