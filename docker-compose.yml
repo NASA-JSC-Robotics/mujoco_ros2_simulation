@@ -19,13 +19,19 @@ services:
     environment:
       - DISPLAY
       - QT_X11_NO_MITSHM=1
-      - NVIDIA_DRIVER_CAPABILITIES=all
       # Pass the ROS_DOMAIN_ID from the host, if available, otherwise we default to 1 to avoid spamming networks
       - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-1}
-      # TODO: Running a 24.04 container on a 22.04 host can cause issues with OpenGL context. We use the line
-      # below to tell the drivers to use the virtual pipe, though it may need to be removed for some setups.
-      # Users with GPUs or in different setups may need to tweak this or pull in additional NVIDIA settings.
-      - MESA_LOADER_DRIVER_OVERRIDE=virpipe
+      # Shared graphics between a host and a container are difficult. Users with GPUs may need to uncomment the
+      # lines below to enable GPU rendering in the container. This connfiguration does not work across all
+      # environments, and users may need to tweak their individual setups.
+    #   - NVIDIA_DRIVER_CAPABILITIES=all
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1 # alternatively, use `count: all` for all GPUs
+    #           capabilities: [ gpu ]
     volumes:
       # Mount the source code.
       - ./:/opt/mujoco/ws/src/mujoco_ros2_simulation:rw
