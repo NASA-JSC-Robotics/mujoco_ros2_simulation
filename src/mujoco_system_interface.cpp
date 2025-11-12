@@ -771,13 +771,13 @@ hardware_interface::return_type MujocoSystemInterface::read(const rclcpp::Time& 
   // FT Sensor data
   for (auto& data : ft_sensor_data_)
   {
-    data.force.data.x() = -mj_data_->sensordata[data.force.mj_sensor_index];
-    data.force.data.y() = -mj_data_->sensordata[data.force.mj_sensor_index + 1];
-    data.force.data.z() = -mj_data_->sensordata[data.force.mj_sensor_index + 2];
+    data.force.data.x() = mj_data_->sensordata[data.force.mj_sensor_index];
+    data.force.data.y() = mj_data_->sensordata[data.force.mj_sensor_index + 1];
+    data.force.data.z() = mj_data_->sensordata[data.force.mj_sensor_index + 2];
 
-    data.torque.data.x() = -mj_data_->sensordata[data.torque.mj_sensor_index];
-    data.torque.data.y() = -mj_data_->sensordata[data.torque.mj_sensor_index + 1];
-    data.torque.data.z() = -mj_data_->sensordata[data.torque.mj_sensor_index + 2];
+    data.torque.data.x() = mj_data_->sensordata[data.torque.mj_sensor_index];
+    data.torque.data.y() = mj_data_->sensordata[data.torque.mj_sensor_index + 1];
+    data.torque.data.z() = mj_data_->sensordata[data.torque.mj_sensor_index + 2];
   }
 
   return hardware_interface::return_type::OK;
