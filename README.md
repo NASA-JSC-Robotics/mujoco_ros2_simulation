@@ -1,7 +1,7 @@
 # MuJoCo ROS 2 Simulation
 
 > [!IMPORTANT]
-> This project has been moved to the ros-control organization.
+> This project has been moved to the ros-controls organization.
 >
 > The new location is: https://github.com/ros-controls/mujoco_ros2_simulation.
 
